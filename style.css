@@ -43,3 +43,26 @@ li { background-color: #fff; padding: 12px; margin-bottom: 10px; border-left: 5p
 
 /* Date Header for Grouping */
 .date-header { background-color: #34495e; color: white; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: bold; margin-top: 25px; margin-bottom: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+/* --- NAYA: Dudh Checklist Grid ka Design --- */
+.checklist-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* Ek line mein 7 din */
+    gap: 5px;
+    text-align: center;
+}
+
+.day-box {
+    padding: 8px 2px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    border: 1px solid #ccc;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Colors for Checklist */
+.day-yes { background-color: #2ecc71; color: white; border: none; } /* Green */
+.day-no { background-color: #e74c3c; color: white; border: none; } /* Red */
+.day-future { background-color: #ecf0f1; color: #bdc3c7; border: none; } /* Gray */
