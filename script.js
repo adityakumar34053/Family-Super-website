@@ -274,4 +274,4 @@ function deleteDudh(index) {
         updateDudhUI();
     }
 }
-updateDudhUI();
+updateDudhUI(); 
