@@ -1,4 +1,21 @@
-// --- 1. TAB SWITCHING LOGIC ---
+// ==========================================
+// 1. LOGIN & SECURITY LOGIC
+// ==========================================
+const correctPIN = "1234"; // Yahan tum apna PIN change kar sakte ho
+
+function checkPIN() {
+    const enteredPIN = document.getElementById('pin-input').value;
+    if (enteredPIN === correctPIN) {
+        document.getElementById('login-screen').style.display = 'none';
+    } else {
+        document.getElementById('login-error').style.display = 'block';
+        document.getElementById('pin-input').value = '';
+    }
+}
+
+// ==========================================
+// 2. TAB SWITCHING LOGIC
+// ==========================================
 function openSection(sectionName, title) {
     document.querySelectorAll('.app-section').forEach(sec => sec.classList.remove('active-section'));
     document.getElementById('section-' + sectionName).classList.add('active-section');
@@ -8,27 +25,31 @@ function openSection(sectionName, title) {
     event.currentTarget.classList.add('active-nav');
 }
 
+// Aaj ki date nikalne ka global variable (YYYY-MM-DD)
 const todayDateString = new Date().toISOString().split('T')[0];
 
-// --- 2. GHAR KA HISAAB (EXPENSE TRACKER) ---
+// ==========================================
+// 3. GHAR KA HISAAB (EXPENSE TRACKER)
+// ==========================================
 let familyExpenses = JSON.parse(localStorage.getItem('familyExpensesData')) || [];
 const dateInput = document.getElementById('date');
 if(dateInput) dateInput.value = todayDateString;
 
 function updateHisabUI() {
     const list = document.getElementById('history-list');
+    if(!list) return;
     list.innerHTML = ''; 
     let totalExpense = 0;
 
+    // Date ke hisaab se group banana (Newest First)
     const uniqueDates = [...new Set(familyExpenses.map(item => item.date))];
-    uniqueDates.sort((a, b) => new Date(b) - new Date(a)); // Newest first
+    uniqueDates.sort((a, b) => new Date(b) - new Date(a)); 
 
     uniqueDates.forEach(dateStr => {
         const parts = dateStr.split('-'); 
         const dateObj = new Date(parts[0], parts[1] - 1, parts[2]); 
         const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
         const showDate = `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()} (${days[dateObj.getDay()]})`;
 
         const dateHeader = document.createElement('div');
@@ -85,7 +106,9 @@ function deleteExpense(index) {
 }
 updateHisabUI();
 
-// --- 3. EMI CALCULATOR ---
+// ==========================================
+// 4. EMI CALCULATOR
+// ==========================================
 function calculateEMI() {
     const p = parseFloat(document.getElementById('emi-principal').value);
     const r = parseFloat(document.getElementById('emi-rate').value) / 12 / 100;
@@ -103,7 +126,9 @@ function calculateEMI() {
     document.getElementById('emi-total').innerText = `₹${Math.round(totalAmount)}`;
 }
 
-// --- 4. GAON KA VYAJ (Rupay Saikra) ---
+// ==========================================
+// 5. GAON KA VYAJ (Rupay Saikra)
+// ==========================================
 function calculateVyaj() {
     const p = parseFloat(document.getElementById('vyaj-principal').value);
     const rate = parseFloat(document.getElementById('vyaj-rate').value);
@@ -119,13 +144,24 @@ function calculateVyaj() {
     document.getElementById('vyaj-total').innerText = `₹${Math.round(total)}`;
 }
 
-// --- 5. DUDH KA HISAAB (UPDATED W/ LIMITS) ---
+// ==========================================
+// 6. DUDH KA HISAAB & CHECKLIST
+// ==========================================
 let dudhRecords = JSON.parse(localStorage.getItem('familyDudhData')) || [];
+
 const dudhDateInput = document.getElementById('dudh-date');
 if(dudhDateInput) dudhDateInput.value = todayDateString;
 
+const monthPicker = document.getElementById('checklist-month-picker');
+if(monthPicker) {
+    // Shuruat mein aaj ka mahina set karna (e.g., "2026-02")
+    monthPicker.value = todayDateString.slice(0, 7);
+    monthPicker.addEventListener('change', updateChecklist);
+}
+
 function updateDudhUI() {
     const list = document.getElementById('dudh-list');
+    if(!list) return;
     list.innerHTML = '';
     let totalLiter = 0;
     let totalBill = 0;
@@ -163,8 +199,49 @@ function updateDudhUI() {
         list.appendChild(li);
     });
 
-    document.getElementById('dudh-total-liter').innerText = totalLiter.toFixed(2); // .toFixed(2) taaki points theek se dikhein
+    document.getElementById('dudh-total-liter').innerText = totalLiter.toFixed(2); 
     document.getElementById('dudh-total-bill').innerText = `₹${Math.round(totalBill)}`;
+    
+    // UI update hone ke baad Checklist ko bhi update karna
+    updateChecklist();
+}
+
+function updateChecklist() {
+    const grid = document.getElementById('checklist-grid');
+    if(!grid || !monthPicker.value) return;
+
+    grid.innerHTML = '';
+    
+    const yearStr = monthPicker.value.split('-')[0];
+    const monthStr = monthPicker.value.split('-')[1];
+    const year = parseInt(yearStr);
+    const month = parseInt(monthStr);
+    
+    // Mahine mein kitne din hain (28, 29, 30, 31)
+    const daysInMonth = new Date(year, month, 0).getDate();
+    
+    // Kis-kis din dudh aaya uski list banana
+    const enteredDates = new Set(dudhRecords.map(record => record.date));
+
+    // 1 se lekar aakhri din tak ke dabbe (boxes) banana
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dayBox = document.createElement('div');
+        dayBox.className = 'day-box';
+        dayBox.innerText = i; 
+
+        // String banakar check karna aasaan hota hai (e.g., "2026-02-05")
+        const checkDateString = `${yearStr}-${monthStr}-${String(i).padStart(2, '0')}`;
+
+        if (enteredDates.has(checkDateString)) {
+            dayBox.classList.add('day-yes'); // Aaya (Green)
+        } else if (checkDateString > todayDateString) {
+            dayBox.classList.add('day-future'); // Future Dates (Gray)
+        } else {
+            dayBox.classList.add('day-no'); // Nahi Aaya (Red)
+        }
+
+        grid.appendChild(dayBox);
+    }
 }
 
 function addDudh() {
@@ -173,18 +250,17 @@ function addDudh() {
     const morn = parseFloat(document.getElementById('dudh-morning').value) || 0; 
     const eve = parseFloat(document.getElementById('dudh-evening').value) || 0;
 
-    // Validation 1: Blank details check
     if (!dDate || isNaN(rate) || (morn === 0 && eve === 0)) {
         return alert("Date, Rate aur dudh ki quantity daaliye!");
     }
 
-    // Validation 2: Max 5 Litre limit check
     if (morn > 5 || eve > 5) {
         return alert("Bhai, dudh ki limit 5 Litre tak hi hai. Kripaya sahi hisaab daalein!");
     }
 
     dudhRecords.push({ date: dDate, rate: rate, morning: morn, evening: eve });
     localStorage.setItem('familyDudhData', JSON.stringify(dudhRecords));
+    
     updateDudhUI();
     
     document.getElementById('dudh-morning').value = '';
