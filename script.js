@@ -13,7 +13,7 @@ function openSection(sectionName, title) {
 const todayDateString = new Date().toISOString().split('T')[0];
 
 // ==========================================
-// 2. GHAR KA HISAAB (EXPENSE TRACKER)
+// 2. GHAR KA HISAAB (EXPENSE TRACKER W/ SEARCH)
 // ==========================================
 let familyExpenses = JSON.parse(localStorage.getItem('familyExpensesData')) || [];
 const dateInput = document.getElementById('date');
@@ -25,7 +25,17 @@ function updateHisabUI() {
     list.innerHTML = ''; 
     let totalExpense = 0;
 
-    const uniqueDates = [...new Set(familyExpenses.map(item => item.date))];
+    // Search bar mein kya likha hai
+    const searchInput = document.getElementById('search-expense');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+    // List ko filter karna (Naam ya Kharcha dono se search)
+    const filteredExpenses = familyExpenses.filter(item => {
+        return item.member.toLowerCase().includes(searchTerm) || 
+               item.description.toLowerCase().includes(searchTerm);
+    });
+
+    const uniqueDates = [...new Set(filteredExpenses.map(item => item.date))];
     uniqueDates.sort((a, b) => new Date(b) - new Date(a)); 
 
     uniqueDates.forEach(dateStr => {
@@ -40,10 +50,12 @@ function updateHisabUI() {
         dateHeader.innerText = `📅 ${showDate}`;
         list.appendChild(dateHeader);
 
-        familyExpenses.forEach((item, index) => {
+        filteredExpenses.forEach((item) => {
             if (item.date === dateStr) {
+                // Asli list mein iska number kya hai (Delete ke liye)
+                const originalIndex = familyExpenses.indexOf(item);
+                
                 const li = document.createElement('li');
-                // Naya Stylish List Design
                 li.innerHTML = `
                     <div class="list-left">
                         <div style="display: flex; align-items: center; margin-bottom: 5px;">
@@ -53,7 +65,7 @@ function updateHisabUI() {
                     </div>
                     <div class="list-right">
                         <span style="font-weight: 800; color: #e74c3c; font-size: 19px;">₹${item.amount}</span> 
-                        <button class="delete-btn" onclick="deleteExpense(${index})" title="Delete">🗑️</button>
+                        <button class="delete-btn" onclick="deleteExpense(${originalIndex})" title="Delete">🗑️</button>
                     </div>
                 `;
                 list.appendChild(li);
@@ -61,7 +73,8 @@ function updateHisabUI() {
         });
     });
 
-    familyExpenses.forEach(item => totalExpense += item.amount);
+    // Upar ka Total Amount sirf filter kiye hue items ka
+    filteredExpenses.forEach(item => totalExpense += item.amount);
     document.getElementById('total-expense').innerText = `₹${totalExpense}`;
 }
 
@@ -186,7 +199,6 @@ function updateDudhUI() {
 
         const li = document.createElement('li');
         li.style.borderLeftColor = '#3498db'; 
-        // Naya Stylish Dudh List Design
         li.innerHTML = `
             <div class="list-left">
                 <div style="display: flex; align-items: center; margin-bottom: 6px;">
