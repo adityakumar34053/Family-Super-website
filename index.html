@@ -3,22 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Super website</title>
-    
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Family Super App</title>
     
     <link rel="icon" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -34,7 +24,7 @@
             
             <div id="section-hisab" class="app-section active-section">
                 <div class="balance-card">
-                    <p>Family Ka Total Kharcha</p>
+                    <p>Total Kharcha</p>
                     <h1 id="total-expense">₹0</h1>
                 </div>
 
@@ -57,11 +47,14 @@
                     <label>Kis din?</label>
                     <input type="date" id="date">
                     
-                    <button class="expense-btn" onclick="addExpense()">Kharcha Add Karein (-)</button>
+                    <button class="expense-btn" onclick="addExpense()">Kharcha Add Karein</button>
                 </div>
 
                 <div class="history-section">
                     <h3>Sabhi Kharche ki List</h3>
+                    
+                    <input type="text" id="search-expense" placeholder="🔍 Naam ya kharcha dhoondhein (e.g., Papa)" onkeyup="updateHisabUI()">
+                    
                     <ul id="history-list"></ul>
                 </div>
             </div>
@@ -170,12 +163,8 @@
             <button class="nav-btn" onclick="openSection('dudh', 'Dudh Ka Hisaab 🥛')">🥛<br>Dudh</button>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <script src="script.js"></script>
-</body>
-</html>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="script.js"></script>
 </body>
 </html>
