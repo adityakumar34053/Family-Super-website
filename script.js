@@ -25,11 +25,9 @@ function updateHisabUI() {
     list.innerHTML = ''; 
     let totalExpense = 0;
 
-    // Search bar mein kya likha hai
     const searchInput = document.getElementById('search-expense');
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
 
-    // List ko filter karna (Naam ya Kharcha dono se search)
     const filteredExpenses = familyExpenses.filter(item => {
         return item.member.toLowerCase().includes(searchTerm) || 
                item.description.toLowerCase().includes(searchTerm);
@@ -52,7 +50,6 @@ function updateHisabUI() {
 
         filteredExpenses.forEach((item) => {
             if (item.date === dateStr) {
-                // Asli list mein iska number kya hai (Delete ke liye)
                 const originalIndex = familyExpenses.indexOf(item);
                 
                 const li = document.createElement('li');
@@ -73,7 +70,6 @@ function updateHisabUI() {
         });
     });
 
-    // Upar ka Total Amount sirf filter kiye hue items ka
     filteredExpenses.forEach(item => totalExpense += item.amount);
     document.getElementById('total-expense').innerText = `₹${totalExpense}`;
 }
