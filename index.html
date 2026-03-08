@@ -14,9 +14,29 @@
 </head>
 <body>
 
-    <div class="app-container">
+    <div id="lock-screen" class="lock-overlay">
+        <div class="lock-card">
+            <div class="lock-icon">🔒</div>
+            <h2 id="lock-title">App Locked</h2>
+            <p id="lock-desc">Apna 4-digit PIN daalein</p>
+            
+            <div class="pin-container">
+                <input type="password" id="pin1" class="pin-box" inputmode="numeric" maxlength="1" oninput="handlePinInput('pin1', 'pin2')" onkeydown="handleBackspace(event, 'pin1', null)" autofocus>
+                <input type="password" id="pin2" class="pin-box" inputmode="numeric" maxlength="1" oninput="handlePinInput('pin2', 'pin3')" onkeydown="handleBackspace(event, 'pin2', 'pin1')">
+                <input type="password" id="pin3" class="pin-box" inputmode="numeric" maxlength="1" oninput="handlePinInput('pin3', 'pin4')" onkeydown="handleBackspace(event, 'pin3', 'pin2')">
+                <input type="password" id="pin4" class="pin-box" inputmode="numeric" maxlength="1" oninput="handlePinInput('pin4', null)" onkeydown="handleBackspace(event, 'pin4', 'pin3')">
+            </div>
+
+            <button onclick="resetPin()" class="forgot-btn">Forgot PIN? Reset Data</button>
+        </div>
+    </div>
+
+    <div class="app-container" id="main-app" style="display: none;">
         <div class="header">
-            <h2 id="app-title">Ghar Ka Hisaab 💰</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="app-title">Ghar Ka Hisaab 💰</h2>
+                <button id="theme-toggle" onclick="toggleTheme()" style="background: none; border: none; font-size: 24px; cursor: pointer;">🌙</button>
+            </div>
             <p style="font-size: 12px; color: #bdc3c7; margin-top: 5px;">Created by ADITYA KUMAR</p>
         </div>
 
@@ -24,35 +44,79 @@
             
             <div id="section-hisab" class="app-section active-section">
                 <div class="balance-card">
-                    <p>Total Kharcha</p>
+                    <p>Total Kharcha (Is Mahine)</p>
                     <h1 id="total-expense">₹0</h1>
+                </div>
+
+                <div class="budget-section" style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ddd;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-weight:bold; color:#2c3e50; font-size: 14px;" class="result-text">Monthly Budget: ₹<span id="budget-display">20000</span></span>
+                        <button onclick="setBudget()" style="background:none; border:none; color:#3498db; cursor:pointer; font-size: 12px;">✏️ Edit</button>
+                    </div>
+                    <div style="width:100%; background:#ecf0f1; border-radius:10px; height:10px; overflow:hidden;">
+                        <div id="budget-bar" style="height:100%; width:0%; background:#2ecc71; transition:width 0.5s ease;"></div>
+                    </div>
+                    <p id="budget-warning" style="font-size:12px; color:#e74c3c; margin-top:8px; display:none; font-weight: bold;">⚠️ Alert: Budget 80% se zyada cross ho gaya hai!</p>
                 </div>
 
                 <div class="form-section">
                     <label>Kaun kharcha kar raha hai?</label>
                     <select id="member-name">
-                        <option value="" disabled selected>Naam select karein...</option>
                         <option value="Papa">Papa</option>
                         <option value="Mummy">Mummy</option>
-                        <option value="Aditya">Aditya</option>
+                        <option value="Aditya" selected>Aditya</option>
                         <option value="Bhai/Behan">Bhai/Behan</option>
                     </select>
 
+                    <label>Category (Kisme kharcha hua?)</label>
+                    <select id="expense-category">
+                        <option value="Ration">🛒 Ration & Groceries</option>
+                        <option value="Medical">💊 Medical</option>
+                        <option value="Petrol">⛽ Petrol & Travel</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Bills">⚡ Bills & Recharge</option>
+                        <option value="Other">📝 Other</option>
+                    </select>
+
                     <label>Kharcha kis cheez par hua?</label>
-                    <input type="text" id="description" placeholder="e.g., Sabji, Ration, Petrol">
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="description" placeholder="e.g., Sabji, Dawa" style="margin-bottom: 0;">
+                        <button id="mic-btn" onclick="startVoice()" style="background:#3498db; color:white; border:none; border-radius:10px; padding:0 15px; cursor:pointer; font-size: 18px;" title="Bol kar likhein">🎤</button>
+                    </div>
                     
                     <label>Kitne paise lage?</label>
                     <input type="number" id="amount" placeholder="Amount (₹)">
                     
                     <label>Kis din?</label>
                     <input type="date" id="date">
+
+                    <label>Bill/Receipt ki Photo (Optional)</label>
+                    <input type="file" id="receipt-img" accept="image/*" style="font-size: 12px; padding: 8px; background: #fff;">
+                    <img id="receipt-preview" style="display:none; width:100%; max-height:150px; object-fit:contain; margin-top:10px; border-radius:10px; background: #f8fafc;">
                     
-                    <button class="expense-btn" onclick="addExpense()">Kharcha Add Karein</button>
+                    <button class="expense-btn" id="btn-add-expense" onclick="addExpense()">Kharcha Add Karein</button>
                 </div>
 
                 <div class="history-section">
-                    <h3>Sabhi Kharche ki List</h3>
-                    <input type="text" id="search-expense" placeholder="🔍 Naam ya kharcha dhoondhein (e.g., Papa)" onkeyup="updateHisabUI()">
+                    <h3>Hisaab & Reports</h3>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button onclick="backupData()" style="flex: 1; padding: 12px; background: #34495e; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">☁️ Backup Data</button>
+                        <button onclick="document.getElementById('restore-file').click()" style="flex: 1; padding: 12px; background: #f39c12; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔄 Restore Data</button>
+                        <input type="file" id="restore-file" accept=".json" style="display: none;" onchange="restoreData(event)">
+                    </div>
+
+                    <input type="month" id="month-filter" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #ccc; font-weight: bold;" onchange="updateHisabUI()">
+                    
+                    <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #ddd;" class="checklist-section">
+                        <h4 style="text-align:center; color:#2c3e50; font-size:14px; margin-bottom:10px;" class="result-text">📊 Kisme Kitna Kharcha?</h4>
+                        <canvas id="categoryChart"></canvas>
+                        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                        <h4 style="text-align:center; color:#2c3e50; font-size:14px; margin-bottom:10px;" class="result-text">👤 Kisne Kitna Kharcha?</h4>
+                        <canvas id="memberChart"></canvas>
+                    </div>
+
+                    <button onclick="exportToPDF()" style="margin-bottom:15px; width:100%; padding:10px; background:#e74c3c; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">📄 Download PDF Report</button>
                     <ul id="history-list"></ul>
                 </div>
             </div>
@@ -72,7 +136,7 @@
                     <button class="expense-btn" style="background-color: #f39c12;" onclick="calculateEMI()">EMI Nikalein</button>
                 </div>
                 <div class="result-card" id="emi-result" style="display:none;">
-                    <h3 style="color: #2c3e50; margin-bottom: 10px;">Har Mahine Ki EMI</h3>
+                    <h3 style="color: #2c3e50; margin-bottom: 10px;" class="result-text">Har Mahine Ki EMI</h3>
                     <h1 id="emi-amount" style="color: #e74c3c;">₹0</h1>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #eee;">
                     <p style="color: #7f8c8d; font-size: 14px;">Total Interest: <strong id="emi-interest" style="color: #333;">₹0</strong></p>
@@ -95,7 +159,7 @@
                     <button class="expense-btn" style="background-color: #27ae60;" onclick="calculateVyaj()">Vyaj Nikalein</button>
                 </div>
                 <div class="result-card" id="vyaj-result" style="display:none;">
-                    <h3 style="color: #2c3e50; margin-bottom: 10px;">Sirf Vyaj (Interest)</h3>
+                    <h3 style="color: #2c3e50; margin-bottom: 10px;" class="result-text">Sirf Vyaj (Interest)</h3>
                     <h1 id="vyaj-only" style="color: #e74c3c;">₹0</h1>
                     <hr style="margin: 10px 0; border: 0; border-top: 1px solid #eee;">
                     <p style="color: #7f8c8d; font-size: 16px;">Total Lautana Hai: <strong id="vyaj-total" style="color: #27ae60; font-size: 20px;">₹0</strong></p>
@@ -112,25 +176,42 @@
                     <label>Date aur Rate</label>
                     <input type="date" id="dudh-date">
                     <input type="number" id="dudh-rate" placeholder="Rate (₹ per Ltr) e.g. 50">
-                    <label>Kitna Dudh aaya? (100ml se 5 Ltr tak)</label>
-                    <small style="color: #7f8c8d; margin-bottom: 8px; display: block; font-size: 12px;">💡 Hint: 100ml = 0.1 | 250ml = 0.25 | 500ml = 0.5 | 1.5 Ltr = 1.5</small>
+                    <label>Kitna Dudh aaya?</label>
+                    <small style="color: #7f8c8d; margin-bottom: 8px; display: block; font-size: 12px;">💡 Hint: 100ml = 0.1 | 500ml = 0.5 | 1.5 Ltr = 1.5</small>
                     <input type="number" id="dudh-morning" placeholder="Subah (Max 5 Ltr)" step="0.1" min="0" max="5">
                     <input type="number" id="dudh-evening" placeholder="Shaam (Max 5 Ltr)" step="0.1" min="0" max="5">
-                    <button class="expense-btn" style="background-color: #3498db;" onclick="addDudh()">Dudh Add Karein</button>
+                    <button class="expense-btn" id="btn-add-dudh" style="background-color: #3498db;" onclick="addDudh()">Dudh Add Karein</button>
                 </div>
                 <div class="checklist-section" style="background: white; padding: 15px; border-radius: 10px; margin-top: 15px; border: 1px solid #ddd;">
-                    <h3 style="margin-bottom: 10px; color: #2c3e50; font-size: 16px;">📅 Mahine Ki Checklist</h3>
+                    <h3 style="margin-bottom: 10px; font-size: 16px;" class="result-text">📅 Mahine Ki Checklist</h3>
                     <input type="month" id="checklist-month-picker" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;">
                     <div id="checklist-grid" class="checklist-grid"></div>
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 10px; color: gray;">
-                        <span>🟩 Aaya</span>
-                        <span>🟥 Nahi Aaya</span>
-                        <span>⬜ Baaki hai</span>
-                    </div>
                 </div>
                 <div class="history-section">
                     <h3>Daily Dudh Record</h3>
                     <ul id="dudh-list"></ul>
+                </div>
+            </div>
+
+            <div id="section-ration" class="app-section">
+                <div class="balance-card" style="background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);">
+                    <p>Kirana & Ration</p>
+                    <h1 style="font-size: 35px;">🛒</h1>
+                </div>
+                <div class="form-section">
+                    <label>Samaan ka naam aur Date:</label>
+                    <input type="date" id="ration-date" style="margin-bottom: 10px;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="ration-item" placeholder="e.g., Chawal 5kg" style="margin-bottom: 0;">
+                        <button class="expense-btn" style="background-color: #8e44ad; margin-top: 0; width: auto; padding: 0 20px;" onclick="addRation()">Add</button>
+                    </div>
+                </div>
+                <div class="history-section">
+                    <h3 style="display: flex; justify-content: space-between; align-items: center;">
+                        Ration List
+                        <button onclick="clearRation()" style="font-size: 12px; padding: 5px 10px; border: none; background: #ff4757; color: white; border-radius: 5px; cursor: pointer;">Clear All</button>
+                    </h3>
+                    <ul id="ration-list"></ul>
                 </div>
             </div>
 
@@ -140,21 +221,16 @@
             <button class="nav-btn active-nav" onclick="openSection('hisab', 'Ghar Ka Hisaab 💰')">💰<br>Hisaab</button>
             <button class="nav-btn" onclick="openSection('emi', 'EMI Calculator 🏦')">🏦<br>EMI</button>
             <button class="nav-btn" onclick="openSection('vyaj', 'Gaon Ka Vyaj ₹')">₹<br>Vyaj</button>
-            <button class="nav-btn" onclick="openSection('dudh', 'Dudh Ka Hisaab 🥛')">🥛<br>Dudh</button>
+            <button class="nav-btn" onclick="openSection('dudh', 'Dudh 🥛')">🥛<br>Dudh</button>
+            <button class="nav-btn" onclick="openSection('ration', 'Ration 🛒')">🛒<br>Ration</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script src="./script.js"></script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(() => console.log('Service Worker Active ho gaya!'))
-                    .catch((err) => console.log('Service Worker Fail:', err));
-            });
-        }
-    </script>
 </body>
 </html>
